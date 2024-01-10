@@ -16,8 +16,10 @@ This Streamlit application requires the following Python libraries to be install
 - **pickle**: Enables serialization and deserialization of Python objects.
 - **statsmodels**: Provides classes and functions for statistical models.
 - **pmdarima**: Offers Auto-ARIMA functionality for time series forecasting.
+- **StreamLit**: Allows for an easily deployable Python Web Application
+
 
 To install these libraries, you can use `pip`. For example:
 
 ```bash
-pip install pandas yfinance scikit-learn matplotlib prophet numpy seaborn tensorflow statsmodels pmdarima
+pip install pandas yfinance scikit-learn matplotlib prophet numpy seaborn tensorflow statsmodels pmdarima streamlit
