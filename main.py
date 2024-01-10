@@ -212,7 +212,7 @@ def weeklyStockBox(stockData, chosen_ticker):
 
 # ! Prophet Prediction
     
-def prophetFunction(chosen_ticker, days):
+def prophetFunction(chosen_ticker, days, prophetData):
     data = prophetData.reset_index().rename(columns={'Date': 'ds', chosen_ticker: 'y'})
     data['y'] = np.log(data['y'])
     model = Prophet(
@@ -227,21 +227,24 @@ def prophetFunction(chosen_ticker, days):
     future = model.make_future_dataframe(periods=days)  # forecasting for 1 year from now.
     forecast = model.predict(future)
 
+    signals = createSignals(forecast)
+    print(f"Signal for the forecast period: {signals}")
+
     figure = model.plot(forecast)
     plt.title(f"Facebook Prediction for {chosen_ticker}")
     plt.show()
 
 # ! Prophet Intervals 
     
-def prophetIntervalWeek(chosen_ticker):
+def prophetIntervalWeek(chosen_ticker, prophetData):
     days = 7
-    prophetFunction(chosen_ticker, days)
-def prophetIntervalTwoWeek(chosen_ticker):
+    prophetFunction(chosen_ticker, days, prophetData)
+def prophetIntervalTwoWeek(chosen_ticker, prophetData):
     days = 14
-    prophetFunction(chosen_ticker, days)
-def prophetIntervalMonth(chosen_ticker):
+    prophetFunction(chosen_ticker, days, prophetData)
+def prophetIntervalMonth(chosen_ticker, prophetData):
     days = 30
-    prophetFunction(chosen_ticker, days)
+    prophetFunction(chosen_ticker, days, prophetData)
 
 
 # ! Long Short-Term Memory
@@ -392,7 +395,20 @@ def arimaFunction(specficStock, chosen_ticker):
     plt.legend()
     plt.show()
 
+# ! Buy/Sell Signals
 
+def createSignals(forecast):
+    # Define buy and sell thresholds (you can adjust these thresholds based on your strategy)
+    buy_threshold = 0.1  # Example: Buy if the forecasted value increases by 10% or more
+    sell_threshold = -0.1  # Example: Sell if the forecasted value decreases by 10% or more
+    
+    buy_count = sum(forecast['yhat'].pct_change() > buy_threshold)
+    sell_count = sum(forecast['yhat'].pct_change() < sell_threshold)
+    
+    if buy_count > sell_count:
+        return 'Buy'
+    else:
+        return 'Sell'
 
 # ! Calling the functions
 
@@ -420,10 +436,10 @@ chosen_ticker = input("META, AVGO, BKNG, or TSLA:   ").upper()
 
 # ? Forecasting Calls
 
-#prophetData = gatherStockDataForProphet()
-#prophetIntervalWeek(chosen_ticker)
-#prophetIntervalTwoWeek(chosen_ticker)
-#prophetIntervalMonth(chosen_ticker)
+prophetData = gatherStockDataForProphet()
+#prophetIntervalWeek(chosen_ticker, prophetData)
+#prophetIntervalTwoWeek(chosen_ticker, prophetData)
+prophetIntervalMonth(chosen_ticker, prophetData)
 
 #lstmData = gatherStockDataForProphet()
 #lstm_stocks(chosen_ticker, lstmData)
@@ -433,6 +449,6 @@ chosen_ticker = input("META, AVGO, BKNG, or TSLA:   ").upper()
 #chosenStockData = linearRegData[chosen_ticker]
 #linearRegressionFunction(listOfDates, chosenStockData, chosen_ticker, linearRegData)
 
-arimaData = gatherStockDataForProphet()
-specficStock = arimaData[chosen_ticker]
-arimaFunction(specficStock, chosen_ticker)
+#arimaData = gatherStockDataForProphet()
+#specficStock = arimaData[chosen_ticker]
+#arimaFunction(specficStock, chosen_ticker)
