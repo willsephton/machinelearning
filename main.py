@@ -20,29 +20,36 @@ def gatherStockDataPCAandKMeans():
 
     return removedRows
 
-stockData = gatherStockDataPCAandKMeans()
-
-
 # ! PCA
-
-pca = PCA(n_components=10)
-reduced_data = pca.fit_transform(stockData)
+def pcaFunction(PCAandKmeansData):
+    pca = PCA(n_components=10)
+    reduced_data = pca.fit_transform(PCAandKmeansData)
+    return reduced_data
 
 # ! K means Clustering
 
-kmeans = KMeans(n_clusters=4)
-kmeans.fit(reduced_data)
+def kmeansFunction(reduced_data):
+    kmeans = KMeans(n_clusters=4)
+    kmeans.fit(reduced_data)
 
-# Obtain the cluster labels for each data point
-cluster_labels = kmeans.labels_
+    # Obtain the cluster labels for each data point
+    cluster_labels = kmeans.labels_
 
-reduced_data = pd.DataFrame(reduced_data, index=stockData.index[:])
+    reduced_data = pd.DataFrame(reduced_data, index=stockData.index[:])
 
-# Add the 'Cluster_Label' column to your DataFrame
-reduced_data['Cluster_Label'] = cluster_labels
+    # Add the 'Cluster_Label' column to your DataFrame
+    reduced_data['Cluster_Label'] = cluster_labels
 
-# Save the updated DataFrame to a new CSV file
-reduced_data.to_csv('data_with_clusters.csv')
+    # Save the updated DataFrame to a new CSV file
+    reduced_data.to_csv('data_with_clusters.csv')
 
+
+
+
+# ! Calling the functions
+
+PCAandKmeansData = gatherStockDataPCAandKMeans()
+kmeansData = pcaFunction(PCAandKmeansData)
+kmeansFunction(kmeansData)
 
 
