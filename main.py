@@ -13,6 +13,13 @@ import pickle
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 
+from statsmodels.tsa.arima_model import ARIMA
+import statsmodels.api as sm
+from sklearn.metrics import mean_squared_error, mean_absolute_error
+import math
+from pmdarima import auto_arima
+
+
 
 # ! Data Retrival
 
@@ -41,6 +48,7 @@ def gatherStockDataCorrelationEDA():
 def gatherStockDataForProphet():
     stockData = yf.download(tickers, period='1y', interval='1d')['Close']
     return stockData
+
 
 # ! PCA
 def pcaFunction(PCAandKmeansData):
@@ -352,6 +360,40 @@ def linearRegressionFunction(listOfDates, chosenStockData, chosen_ticker, linear
     plt.xlabel('Time')
     plt.ylabel('Stock Price')
     plt.show()  
+
+# ! ARIMA
+    
+def arimaFunction(specficStock, chosen_ticker):
+        # Fit auto_arima
+    model = auto_arima(specficStock, start_p=1, start_q=1,
+                    max_p=3, max_q=3, m=12,
+                    start_P=0, seasonal=True,
+                    d=1, D=1, trace=True,
+                    error_action='ignore',
+                    suppress_warnings=True,
+                    stepwise=True)
+
+    # Summary and best parameters
+    print(model.summary())
+    print(model.get_params())
+
+    # Forecast
+    n_periods = 10
+    forecast, conf_int = model.predict(n_periods=n_periods, return_conf_int=True)
+
+    # Plot Forecast
+    plt.figure(figsize=(10, 6))
+    plt.plot(specficStock.index, specficStock, label='Original Data')
+    plt.plot(pd.date_range(start=specficStock.index[-1], periods=n_periods + 1, freq='M')[1:], forecast, color='red', label='Forecast')
+    plt.fill_between(pd.date_range(start=specficStock.index[-1], periods=n_periods + 1, freq='M')[1:], conf_int[:, 0], conf_int[:, 1], color='pink', alpha=0.3)
+    plt.xlabel('Date')
+    plt.ylabel('Stock Price')
+    plt.title(f'ARIMA Forecast for {chosen_ticker}')
+    plt.legend()
+    plt.show()
+
+
+
 # ! Calling the functions
 
 chosen_tickers = ["META", "AVGO", "BKNG", "TSLA"]
@@ -386,7 +428,11 @@ chosen_ticker = input("META, AVGO, BKNG, or TSLA:   ").upper()
 #lstmData = gatherStockDataForProphet()
 #lstm_stocks(chosen_ticker, lstmData)
 
-linearRegData = gatherStockDataForProphet()
-listOfDates = list(range(0, int(len(linearRegData))))
-chosenStockData = linearRegData[chosen_ticker]
-linearRegressionFunction(listOfDates, chosenStockData, chosen_ticker, linearRegData)
+#linearRegData = gatherStockDataForProphet()
+#listOfDates = list(range(0, int(len(linearRegData))))
+#chosenStockData = linearRegData[chosen_ticker]
+#linearRegressionFunction(listOfDates, chosenStockData, chosen_ticker, linearRegData)
+
+arimaData = gatherStockDataForProphet()
+specficStock = arimaData[chosen_ticker]
+arimaFunction(specficStock, chosen_ticker)
