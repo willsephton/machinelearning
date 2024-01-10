@@ -19,6 +19,7 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error
 import math
 from pmdarima import auto_arima
 
+import streamlit as st
 
 
 # ! Data Retrival
@@ -71,33 +72,32 @@ def kmeansFunction(reduced_data, PCAandKmeansData):
     reduced_data['Cluster_Label'] = cluster_labels
 
     # Save the updated DataFrame to a new CSV file
+    st.write(reduced_data)
     # ? Uncomment this later: reduced_data.to_csv('data_with_clusters.csv')
 
 # ! Colleration
 
-def topTenCorrelation(stockData, chosen_tickers, x):
-        print(f"Top Ten Correlation for {chosen_tickers[x]}")
-        correlated = stockData.corrwith(stockData[chosen_tickers[x]])
+def topTenCorrelation(stockData, chosen_ticker):
+        st.write(f"Top Ten Correlation for {chosen_ticker}")
+        correlated = stockData.corrwith(stockData[chosen_ticker])
 
         highest11 = correlated.nlargest(11)
         highest10 = highest11.iloc[1:]  # Using iloc to select rows
-        print(highest10)
+        st.write(highest10)
         return highest10
     
-def bottomTenCorrelation(stockData, chosen_tickers, x):
-        print(f"Bottom Ten Correlation for {chosen_tickers[x]}")
-        correlated = stockData.corrwith(stockData[chosen_tickers[x]])
+def bottomTenCorrelation(stockData, chosen_ticker):
+        st.write(f"Bottom Ten Correlation for {chosen_ticker}")
+        correlated = stockData.corrwith(stockData[chosen_ticker])
         lowest10 = correlated.nsmallest(10)
         #lowest10 = lowest116.iloc[1:]  # Using iloc to select rows
-        print(lowest10)
+        st.write(lowest10)
         return lowest10
 
-def correlationOutput(chosen_tickers, stockData):
-    for x in range(len(chosen_tickers)):
+def correlationOutput(chosen_ticker, stockData):
+    topTenCorrelation(stockData, chosen_ticker)
 
-        topTenCorrelation(stockData, chosen_tickers, x)
-
-        bottomTenCorrelation(stockData, chosen_tickers, x)
+    bottomTenCorrelation(stockData, chosen_ticker)
 
 
 # ! EDA
@@ -117,7 +117,7 @@ def stockPricesOverTime(stockData, chosen_ticker):
     plt.legend()  # Show legend with ticker labels
     plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
 
-    plt.show()  # Display the plot
+    st.pyplot()  # Display the plot
 
 
 # * Visualize the distribution of observation
@@ -134,7 +134,8 @@ def distributionOfStockPricesBox(stockData, chosen_ticker):
     plt.yticks([])
     plt.grid(axis='x')
 
-    plt.show()
+    st.pyplot()
+
 
 def distributionOfStockPricesHistogram(stockData, chosen_ticker):
 
@@ -149,7 +150,7 @@ def distributionOfStockPricesHistogram(stockData, chosen_ticker):
     plt.xlabel('Stock Prices')
     plt.ylabel('Frequency')
 
-    plt.show()
+    st.pyplot()
 
 
 # * Investigate the change in distribution over intervals
@@ -173,7 +174,7 @@ def monthlyStockLine(stockData, chosen_ticker):
     plt.legend()  # Show legend with ticker labels
     plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
 
-    plt.show()  # Display the plot
+    st.pyplot()
 
 def monthlyStockHistogram(stockData, chosen_ticker):
     
@@ -194,7 +195,7 @@ def monthlyStockHistogram(stockData, chosen_ticker):
     plt.xlabel('Monthly Average Stock Prices')
     plt.ylabel('Frequency')
 
-    plt.show()
+    st.pyplot()
 
 def weeklyStockBox(stockData, chosen_ticker):
 
@@ -207,7 +208,7 @@ def weeklyStockBox(stockData, chosen_ticker):
     plt.xlabel('Weeks')
     plt.ylabel('Closing Price')
     plt.title(f'Distribution of Weekly Closing Prices for {chosen_ticker}')
-    plt.show()
+    st.pyplot()
 
 
 # ! Prophet Prediction
@@ -224,15 +225,13 @@ def prophetFunction(chosen_ticker, days, prophetData):
     )
 
     model.fit(data)
-    future = model.make_future_dataframe(periods=days)  # forecasting for 1 year from now.
+    future = model.make_future_dataframe(periods=days)
     forecast = model.predict(future)
 
     signals = createSignals(forecast)
-    print(f"Signal for the forecast period: {signals}")
+    st.write(f"Signal for the forecast period: {signals}")
 
-    figure = model.plot(forecast)
-    plt.title(f"Facebook Prediction for {chosen_ticker}")
-    plt.show()
+    st.pyplot(model.plot(forecast))
 
 # ! Prophet Intervals 
     
@@ -297,7 +296,7 @@ def lstm_stocks(chosen_stock, stockData):
     plt.ylabel('Value')
     plt.xlabel('Time Step')
     plt.legend()
-    plt.show()
+    st.pyplot()
 
     fig_prediction = plt.figure(figsize=(10, 8))
     plt.plot(np.arange(0, len(Y_train)), Y_train, 'g', label="history")
@@ -306,7 +305,7 @@ def lstm_stocks(chosen_stock, stockData):
     plt.ylabel('Value')
     plt.xlabel('Time Step')
     plt.legend()
-    plt.show()
+    st.pyplot()
 
 # ! Linear Regression
 
@@ -362,7 +361,7 @@ def linearRegressionFunction(listOfDates, chosenStockData, chosen_ticker, linear
     plt.legend()
     plt.xlabel('Time')
     plt.ylabel('Stock Price')
-    plt.show()  
+    st.pyplot() 
 
 # ! ARIMA
     
@@ -393,7 +392,7 @@ def arimaFunction(specficStock, chosen_ticker):
     plt.ylabel('Stock Price')
     plt.title(f'ARIMA Forecast for {chosen_ticker}')
     plt.legend()
-    plt.show()
+    st.pyplot()
 
 # ! Buy/Sell Signals
 
@@ -412,43 +411,87 @@ def createSignals(forecast):
 
 # ! Calling the functions
 
-chosen_tickers = ["META", "AVGO", "BKNG", "TSLA"]
-chosen_ticker = input("META, AVGO, BKNG, or TSLA:   ").upper()
+#chosen_tickers = ["META", "AVGO", "BKNG", "TSLA"]
+#chosen_ticker = input("META, AVGO, BKNG, or TSLA:   ").upper()
 
 
 # ? PCA and Kmeans Calls
-#PCAandKmeansData = gatherStockDataPCAandKMeans()
-#kmeansData = pcaFunction(PCAandKmeansData)
-#kmeansFunction(kmeansData, PCAandKmeansData)
+
 
 # ? Correlation Calls
-#correlationData = gatherStockDataCorrelationEDA()
-#correlationOutput(chosen_tickers, correlationData)
+
 
 # ? EDA Calls
 
-#edaData = gatherStockDataCorrelationEDA()
-#stockPricesOverTime(edaData, chosen_ticker)
-#distributionOfStockPricesBox(edaData, chosen_ticker)
-#distributionOfStockPricesHistogram(edaData, chosen_ticker)
-#monthlyStockHistogram(edaData, chosen_ticker)
-#weeklyStockBox(edaData, chosen_ticker)
 
-# ? Forecasting Calls
 
-prophetData = gatherStockDataForProphet()
-#prophetIntervalWeek(chosen_ticker, prophetData)
-#prophetIntervalTwoWeek(chosen_ticker, prophetData)
-prophetIntervalMonth(chosen_ticker, prophetData)
 
-#lstmData = gatherStockDataForProphet()
-#lstm_stocks(chosen_ticker, lstmData)
+def main():
+    st.set_option('deprecation.showPyplotGlobalUse', False)
 
-#linearRegData = gatherStockDataForProphet()
-#listOfDates = list(range(0, int(len(linearRegData))))
-#chosenStockData = linearRegData[chosen_ticker]
-#linearRegressionFunction(listOfDates, chosenStockData, chosen_ticker, linearRegData)
+    st.title('Machine Learning Assessment Application')
 
-#arimaData = gatherStockDataForProphet()
-#specficStock = arimaData[chosen_ticker]
-#arimaFunction(specficStock, chosen_ticker)
+    chosen_tickers = ["META", "AVGO", "BKNG", "TSLA"]
+    chosen_ticker = st.sidebar.selectbox('Select a Ticker', chosen_tickers)
+
+    option = st.sidebar.selectbox(
+        'Select an Option',
+        ('Home', 'PCA and Kmeans clustering', 'Correlation', 'EDA', 'Prophet Forecast', 'ARIMA Forecast', 'LSTM Forecast', 'Linear Regression Forecast')
+    )
+
+    if option == "Home":
+        st.subheader('Will Sephton')
+        st.write("Hi this is my app")
+    
+    if option == 'PCA and Kmeans clustering':
+        st.subheader('Dataset after PCA and Kmeans clustering')
+        st.write("The cluster label is listed on the far right of the dataset")
+        PCAandKmeansData = gatherStockDataPCAandKMeans()
+        kmeansData = pcaFunction(PCAandKmeansData)
+        kmeansFunction(kmeansData, PCAandKmeansData)
+
+    if option == 'Correlation':
+        st.subheader('Top Ten and Bottom Ten Correlated Stocks')
+        correlationData = gatherStockDataCorrelationEDA()
+        correlationOutput(chosen_ticker, correlationData)
+
+    if option == 'EDA':
+        st.subheader('EDA')
+        edaData = gatherStockDataCorrelationEDA()
+        st.write(f"Stock Prices Over Time for {chosen_ticker}")
+        stockPricesOverTime(edaData, chosen_ticker)
+        st.write(f"Distribution of Stock Prices for {chosen_ticker} (Box Chart)")
+        distributionOfStockPricesBox(edaData, chosen_ticker)
+        st.write(f"Distribution of Stock Prices for {chosen_ticker} (Histogram)")
+        distributionOfStockPricesHistogram(edaData, chosen_ticker)
+        st.write(f"Monthly Stock Prices for {chosen_ticker}")
+        monthlyStockHistogram(edaData, chosen_ticker)
+        st.write(f"Weekly Stock Prices for {chosen_ticker}")
+        weeklyStockBox(edaData, chosen_ticker)
+
+    if option == 'Prophet Forecast':
+        st.subheader('Prophet Forecast')
+        prophetData = gatherStockDataForProphet()
+        days = st.slider('Select Forecasting Period (in days)', min_value=1, max_value=365, value=30)
+        prophetFunction(chosen_ticker, days, prophetData)
+
+    if option == 'ARIMA Forecast':
+        st.subheader('Arima Forecast')
+        arimaData = gatherStockDataForProphet()
+        specficStock = arimaData[chosen_ticker]
+        arimaFunction(specficStock, chosen_ticker)
+    
+    if option == 'LSTM Forecast':
+        st.subheader('LSTM Forecast')
+        lstmData = gatherStockDataForProphet()
+        lstm_stocks(chosen_ticker, lstmData)
+
+    if option == 'Linear Regression Forecast':
+        st.subheader('Linear Regression Forecast')
+        linearRegData = gatherStockDataForProphet()
+        listOfDates = list(range(0, int(len(linearRegData))))
+        chosenStockData = linearRegData[chosen_ticker]
+        linearRegressionFunction(listOfDates, chosenStockData, chosen_ticker, linearRegData)
+
+if __name__ == "__main__":
+    main()
