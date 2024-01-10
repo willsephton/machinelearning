@@ -4,7 +4,10 @@ from sklearn.preprocessing import *
 from sklearn.decomposition import PCA
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt 
-import seaborn as sns
+from prophet import Prophet
+import numpy as np
+
+
 
 # ! Data Retrival
 
@@ -29,6 +32,10 @@ def gatherStockDataCorrelationEDA():
     removedRows = closeData.dropna(axis=1) #Cleans rows with empty cells
 
     return removedRows
+
+def gatherStockDataForProphet():
+    stockData = yf.download(tickers, period='1y', interval='1d')['Close']
+    return stockData
 
 # ! PCA
 def pcaFunction(PCAandKmeansData):
@@ -189,6 +196,40 @@ def weeklyStockBox(stockData, chosen_ticker):
     plt.title(f'Distribution of Weekly Closing Prices for {chosen_ticker}')
     plt.show()
 
+
+# ! Prophet Prediction
+    
+def prophetFunction(chosen_ticker, days):
+    data = prophetData.reset_index().rename(columns={'Date': 'ds', chosen_ticker: 'y'})
+    data['y'] = np.log(data['y'])
+    model = Prophet(
+        daily_seasonality=True,
+        yearly_seasonality=True,
+        weekly_seasonality=True,
+        changepoint_prior_scale=0.05,
+        seasonality_prior_scale=10.0
+    )
+
+    model.fit(data)
+    future = model.make_future_dataframe(periods=days)  # forecasting for 1 year from now.
+    forecast = model.predict(future)
+
+    figure = model.plot(forecast)
+    plt.title(f"Facebook Prediction for {chosen_ticker}")
+    plt.show()
+
+# ! Prophet Intervals 
+    
+def prophetIntervalWeek(chosen_ticker):
+    days = 7
+    prophetFunction(chosen_ticker, days)
+def prophetIntervalTwoWeek(chosen_ticker):
+    days = 14
+    prophetFunction(chosen_ticker, days)
+def prophetIntervalMonth(chosen_ticker):
+    days = 30
+    prophetFunction(chosen_ticker, days)
+
 # ! Calling the functions
 
 chosen_tickers = ["META", "AVGO", "BKNG", "TSLA"]
@@ -206,9 +247,16 @@ chosen_ticker = input("META, AVGO, BKNG, or TSLA:   ").upper()
 
 #? EDA Calls
 
-edaData = gatherStockDataCorrelationEDA()
-stockPricesOverTime(edaData, chosen_ticker)
-distributionOfStockPricesBox(edaData, chosen_ticker)
-distributionOfStockPricesHistogram(edaData, chosen_ticker)
-monthlyStockHistogram(edaData, chosen_ticker)
-weeklyStockBox(edaData, chosen_ticker)
+#edaData = gatherStockDataCorrelationEDA()
+#stockPricesOverTime(edaData, chosen_ticker)
+#distributionOfStockPricesBox(edaData, chosen_ticker)
+#distributionOfStockPricesHistogram(edaData, chosen_ticker)
+#monthlyStockHistogram(edaData, chosen_ticker)
+#weeklyStockBox(edaData, chosen_ticker)
+
+# ? Forecasting Calls
+
+prophetData = gatherStockDataForProphet()
+prophetIntervalWeek(chosen_ticker)
+prophetIntervalTwoWeek(chosen_ticker)
+prophetIntervalMonth(chosen_ticker)
