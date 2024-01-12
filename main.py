@@ -117,7 +117,7 @@ def stockPricesOverTime(stockData, chosen_ticker):
     plt.legend()  # Show legend with ticker labels
     plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
 
-    st.pyplot()  # Display the plot
+    st.pyplot(plt)  # Display the plot
 
 
 # * Visualize the distribution of observation
@@ -134,7 +134,7 @@ def distributionOfStockPricesBox(stockData, chosen_ticker):
     plt.yticks([])
     plt.grid(axis='x')
 
-    st.pyplot()
+    st.pyplot(plt)
 
 
 def distributionOfStockPricesHistogram(stockData, chosen_ticker):
@@ -150,7 +150,7 @@ def distributionOfStockPricesHistogram(stockData, chosen_ticker):
     plt.xlabel('Stock Prices')
     plt.ylabel('Frequency')
 
-    st.pyplot()
+    st.pyplot(plt)
 
 
 # * Investigate the change in distribution over intervals
@@ -174,7 +174,7 @@ def monthlyStockLine(stockData, chosen_ticker):
     plt.legend()  # Show legend with ticker labels
     plt.xticks(rotation=45)  # Rotate x-axis labels for better readability
 
-    st.pyplot()
+    st.pyplot(plt)
 
 def monthlyStockHistogram(stockData, chosen_ticker):
     
@@ -195,7 +195,7 @@ def monthlyStockHistogram(stockData, chosen_ticker):
     plt.xlabel('Monthly Average Stock Prices')
     plt.ylabel('Frequency')
 
-    st.pyplot()
+    st.pyplot(plt)
 
 def weeklyStockBox(stockData, chosen_ticker):
 
@@ -208,7 +208,7 @@ def weeklyStockBox(stockData, chosen_ticker):
     plt.xlabel('Weeks')
     plt.ylabel('Closing Price')
     plt.title(f'Distribution of Weekly Closing Prices for {chosen_ticker}')
-    st.pyplot()
+    st.pyplot(plt)
 
 
 # ! Prophet Prediction
@@ -296,7 +296,7 @@ def lstm_stocks(chosen_stock, stockData):
     plt.ylabel('Value')
     plt.xlabel('Time Step')
     plt.legend()
-    st.pyplot()
+    st.pyplot(plt)
 
     fig_prediction = plt.figure(figsize=(10, 8))
     plt.plot(np.arange(0, len(Y_train)), Y_train, 'g', label="history")
@@ -305,7 +305,7 @@ def lstm_stocks(chosen_stock, stockData):
     plt.ylabel('Value')
     plt.xlabel('Time Step')
     plt.legend()
-    st.pyplot()
+    st.pyplot(plt)
 
 # ! Linear Regression
 
@@ -361,7 +361,7 @@ def linearRegressionFunction(listOfDates, chosenStockData, chosen_ticker, linear
     plt.legend()
     plt.xlabel('Time')
     plt.ylabel('Stock Price')
-    st.pyplot() 
+    st.pyplot(plt) 
 
 # ! ARIMA
     
@@ -392,14 +392,13 @@ def arimaFunction(specficStock, chosen_ticker):
     plt.ylabel('Stock Price')
     plt.title(f'ARIMA Forecast for {chosen_ticker}')
     plt.legend()
-    st.pyplot()
+    st.pyplot(plt)
 
 # ! Buy/Sell Signals
 
 def createSignals(forecast):
-    # Define buy and sell thresholds (you can adjust these thresholds based on your strategy)
-    buy_threshold = 0.1  # Example: Buy if the forecasted value increases by 10% or more
-    sell_threshold = -0.1  # Example: Sell if the forecasted value decreases by 10% or more
+    buy_threshold = 0.1 # Buy threshold is +10%
+    sell_threshold = -0.1  # Sell threshold is -10%
     
     buy_count = sum(forecast['yhat'].pct_change() > buy_threshold)
     sell_count = sum(forecast['yhat'].pct_change() < sell_threshold)
@@ -409,26 +408,10 @@ def createSignals(forecast):
     else:
         return 'Sell'
 
-# ! Calling the functions
-
-#chosen_tickers = ["META", "AVGO", "BKNG", "TSLA"]
-#chosen_ticker = input("META, AVGO, BKNG, or TSLA:   ").upper()
-
-
-# ? PCA and Kmeans Calls
-
-
-# ? Correlation Calls
-
-
-# ? EDA Calls
-
-
+# ! StreamLit Stuff
 
 
 def main():
-    st.set_option('deprecation.showPyplotGlobalUse', False)
-
     st.title('Machine Learning Assessment Application')
 
     chosen_tickers = ["META", "AVGO", "BKNG", "TSLA"]
@@ -440,8 +423,15 @@ def main():
     )
 
     if option == "Home":
-        st.subheader('Will Sephton')
-        st.write("Hi this is my app")
+        st.subheader('COM624 - Will Sephton')
+        st.write("My chosen stocks from the 4 clusters are:")
+        st.write("Meta Platforms Inc - META")
+        st.write("Broadcom Inc - AVGO")
+        st.write("Booking Holdings Inc - BKNG")
+        st.write("Tesla Inc - TSLA")
+        st.write("In order to choose these stocks I created a random number generator in Python and assigned each stock in a cluster with a number.")
+        st.write("All data is loaded in real time and downloaded whenever there is an option change or ticker change.")
+
     
     if option == 'PCA and Kmeans clustering':
         st.subheader('Dataset after PCA and Kmeans clustering')
@@ -458,12 +448,15 @@ def main():
     if option == 'EDA':
         st.subheader('EDA')
         edaData = gatherStockDataCorrelationEDA()
+        st.write("Temporal Structure")
         st.write(f"Stock Prices Over Time for {chosen_ticker}")
         stockPricesOverTime(edaData, chosen_ticker)
+        st.write("Visualize the distribution of observation")
         st.write(f"Distribution of Stock Prices for {chosen_ticker} (Box Chart)")
         distributionOfStockPricesBox(edaData, chosen_ticker)
         st.write(f"Distribution of Stock Prices for {chosen_ticker} (Histogram)")
         distributionOfStockPricesHistogram(edaData, chosen_ticker)
+        st.write("Investigate the change in distribution over intervals")
         st.write(f"Monthly Stock Prices for {chosen_ticker}")
         monthlyStockHistogram(edaData, chosen_ticker)
         st.write(f"Weekly Stock Prices for {chosen_ticker}")
