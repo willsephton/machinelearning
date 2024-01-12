@@ -23,3 +23,18 @@ To install these libraries, you can use `pip`. For example:
 
 ```bash
 pip install pandas yfinance scikit-learn matplotlib prophet numpy seaborn tensorflow statsmodels pmdarima streamlit
+
+```
+
+For this project the following stocks were chosen:
+- Broadcom Inc. - AVGO
+-	Meta Platforms Inc. - META
+-	Booking Holdings Inc. - BKNG
+-	Tesla Inc. - TSLA
+
+To run this project after installing all the required libraries, open a command terminal in the main folder, or open the project in your IDE and use the terminal in there and type:
+
+```bash
+streamlit run main.py
+
+```
